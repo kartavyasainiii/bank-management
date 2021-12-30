@@ -1,0 +1,227 @@
+#include <stdio.h>
+#include <conio.h>
+#include <string.h>
+#include <stdlib.h>
+
+typedef struct acc_type
+{
+     char bank_name[20];
+     char bank_branch[20];
+     char acc_holder_name[30];
+     int acc_number;
+     char acc_holder_address[100];
+     float available_balance;
+}bank;
+int num_acc;
+void Create_new_account();
+void Cash_Deposit();
+void Cash_withdrawl();
+void Account_information();
+void Log_out();
+void display_options();
+void search_account();
+int main()
+{
+   char option;
+clrscr();
+    num_acc=0;
+    while(1)
+    {
+	system("cls");
+	textcolor(GREEN);
+       cprintf("\n***** Welcome to Bank Application *****\n\n");
+       printf("\nThis program is brought you by ");
+       textcolor(CYAN);
+       cprintf("KARTAVYA SAINI\n");
+       display_options();
+       printf("Please enter any options (1/2/3/4/5/6/7) ");
+       printf("to continue : ");
+
+	option = getch();
+	printf("%c \n",option);
+	switch(option)
+	{
+	  case '1': Create_new_account();
+		    break;
+	  case '2': Cash_Deposit();
+		    break;
+	  case '3': Cash_withdrawl();
+		    break;
+	  case '4': Account_information();
+		    break;
+	  case '5':search_account();
+		    break;
+	  case '6': return 0;
+	  case '7': system("cls");
+		    break;
+	  default : system("cls");
+		    printf("Please enter one of the options");
+		    printf("(1/2/3/4/5/6/7) to continue \n ");
+		    break;
+	}
+	getch();
+    }
+
+    return 0;
+}
+
+
+void display_options()
+{
+    printf("\n1. Create new account \n");
+    printf("2. Cash Deposit \n");
+    printf("3. Cash withdrawl \n");
+    printf("4. Account information \n");
+    printf("5. Search Account \n");
+    printf("6. Log out \n");
+    printf("7. Clear the screen and display available ");
+    printf("options \n\n");
+}
+
+void Create_new_account()
+{
+	bank b;
+	FILE *p;
+	p=fopen("bank","a");
+   printf("\nEnter the bank name    : ");
+   scanf("%s", &b.bank_name);
+   printf("\nEnter the branch name    : ");
+   scanf("%s", &b.bank_branch);
+   printf("\nEnter the account holder name    : ");
+   scanf("%s", &b.acc_holder_name);
+   printf("\nEnter the account number(1 to 10): ");
+   scanf("%d", &b.acc_number);
+   printf("\nEnter the account holder address : ");
+   scanf("%s", &b.acc_holder_address);
+
+   fwrite(&b,sizeof(b),1,p);
+   fclose(p);
+   printf("\nAccount has been created successfully \n\n");
+   printf("bank name    	  : %s \n" ,b.bank_name);
+   printf("branch name    	  : %s \n" ,b.bank_branch);
+   printf("Account holder name    : %s \n" ,b.acc_holder_name);
+   printf("Account number         : %d \n" ,b.acc_number);
+   printf("Account holder address : %s \n" ,b.acc_holder_address);
+   printf("Available balance      : %.2f \n" ,b.available_balance);
+
+}
+
+void Account_information()
+{
+     register int num_acc = 0;
+     FILE *p;
+     bank b;
+     p=fopen("bank","r");
+     while(fread(&b,sizeof(b),1,p)==1)
+     {
+	 printf("\nBank name              : %s \n" , b.bank_name);
+	 printf("Bank branch              : %s \n" ,b.bank_branch);
+	 printf("Account holder name      : %s \n" ,b.acc_holder_name);
+	 printf("Account number           : %d \n" ,b.acc_number);
+	 printf("Account holder address   : %s \n" ,b.acc_holder_address);
+	 printf("Available balance        : %.2f \n\n" ,b.available_balance);
+	 num_acc++;
+     }
+}
+void search_account()
+{
+     int num_acc;
+     FILE *p;
+     int t=0;
+     bank b;
+     printf("\n\tEnter Account Number to Search : ");
+     scanf("%d",&num_acc);
+     p=fopen("bank","r");
+     while(fread(&b,sizeof(b),1,p)==1)
+     {
+	if(num_acc==b.acc_number)
+	{
+	t=1;
+	 printf("\nBank name              : %s \n" , b.bank_name);
+	 printf("Bank branch              : %s \n" ,b.bank_branch);
+	 printf("Account holder name      : %s \n" ,b.acc_holder_name);
+	 printf("Account number           : %d \n" ,b.acc_number);
+	 printf("Account holder address   : %s \n" ,b.acc_holder_address);
+	 printf("Available balance        : %.2f \n\n" ,b.available_balance);
+	}
+     }
+     if(t==0)
+	printf("\n\tAccount Nunber not Found");
+}
+
+
+void Cash_Deposit()
+{
+   auto int acc_no;
+   float add_money;
+   bank b;
+   FILE *p,*q;
+   p=fopen("bank","r");
+   q=fopen("temp","w");
+
+   printf("Enter account number you want to deposit money:");
+   scanf("%d",&acc_no);
+   printf("\nThe current balance for account %d is %.2f \n",acc_no,b.available_balance);
+   printf("\nEnter money you want to deposit :  ");
+   scanf("%f",&add_money);
+
+   while (fread(&b,sizeof(b),1,p))
+   {
+	 if(acc_no!=b.acc_number)
+		fwrite(&b,sizeof(b),1,q);
+	 else
+	 {
+	printf("\nThe current balance for account %d is %.2f \n",acc_no,b.available_balance);
+	b.available_balance=b.available_balance+add_money;
+	 printf("\nThe New balance for account %d is %.2f \n",
+	 acc_no, b.available_balance);
+
+	 fwrite(&b,sizeof(b),1,q);
+	 }
+   }
+   fclose(p);
+   fclose(q);
+   remove("bank");
+   rename("temp","bank");
+}
+
+
+void Cash_withdrawl()
+{
+   auto int acc_no;
+   float withdraw_money;
+   FILE *p,*q;
+   bank b;
+   p=fopen("bank","r");
+   q=fopen("temp","w");
+
+   printf("Enter account number you want to withdraw money:");
+   scanf("%d",&acc_no);
+   printf("\nEnter money you want to withdraw from account ");
+   scanf("%f",&withdraw_money);
+
+   while (fread(&b,sizeof(b),1,p))
+   {
+	 if(acc_no!=b.acc_number)
+		fwrite(&b,sizeof(b),1,q);
+	 else
+	 {
+
+   printf("\nThe current balance for account %d is %.2f \n",
+   acc_no, b.available_balance);
+	if(b.available_balance<withdraw_money)
+		printf("\nInsufficent Balance");
+	else
+		{
+		b.available_balance=b.available_balance-withdraw_money;
+	 printf("\nThe New balance for account %d is %.2f \n",
+	 acc_no, b.available_balance);
+		}
+	 fwrite(&b,sizeof(b),1,q);
+	}
+   }
+   fclose(p);
+   fclose(q);
+   remove("bank");
+   rename("temp","bank");
+}
